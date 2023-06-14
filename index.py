@@ -28,7 +28,11 @@ def get_values_html(dic):
         while v["value"] is None and attempts < 3:
             v_html = html.select_one(v["selector"])
             if(v_html != None):
-                v["value"] = v_html.get_text().strip()
+                if(v_html.name == 'img'):
+                    v["value"] = v_html['src']
+                else: 
+                    v["value"] = v_html.get_text().strip()
+                    
             time.sleep(1)
             attempts += 1
 
@@ -61,7 +65,16 @@ values = {
     "description": {
         "selector": "#productDescription > p > span",
         "value": None
+    },
+    "calification": {
+        "selector": ".a-icon-alt",
+        "value": None
+    },
+    "image": {
+        "selector": ".a-dynamic-image",
+        "value": None
     }
+    
 }
 values_html = get_values_html(values)
 
