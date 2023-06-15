@@ -9,7 +9,7 @@ def get_randompath(path):
 
 
 def get_useragent(path):
-    with open(f"./Agents/{path}") as f:
+    with open(f"./public/Agents/{path}") as f:
         agent = f.read().split("\n")
         return random.choice(agent)
 
@@ -18,7 +18,7 @@ def get_html(url, headers, proxie, cookies):
     return BeautifulSoup(response.content, 'html.parser')
 
 def get_proxy():
-    with open("./Proxy/Proxy.txt") as f:
+    with open("./public/Proxy/Proxy.txt") as f:
         proxy = f.read().split("\n")
         return { "http" : random.choice(proxy)}
     
@@ -32,14 +32,14 @@ def get_values_html(dic):
                     v["value"] = v_html['src']
                 else: 
                     v["value"] = v_html.get_text().strip()
-                    
+
             time.sleep(1)
             attempts += 1
 
     return dic
 
-url = 'https://www.amazon.com/-/es/gp/product/B07W956JBC/ref=ewc_pr_img_4?smid=A2XZ7JICGUQ1CX&psc=1'
-path = get_randompath("./Agents")
+url = str(input('Ingresa la URL para obtener su información: '))
+path = get_randompath("./public/Agents/")
 proxy = get_proxy()
 
 headers = {
@@ -72,6 +72,18 @@ values = {
     },
     "image": {
         "selector": ".a-dynamic-image",
+        "value": None
+    },
+    "seller": {
+        "selector": "#sellerProfileTriggerId",
+        "value": None
+    },
+    "sent by": {
+        "selector": "#tabular-buybox > div.tabular-buybox-container > div:nth-child(4) > div > span",
+        "value": None
+    },
+    "weight": {
+        "selector": "#poExpander > div.a-expander-content.a-expander-partial-collapse-content.a-expander-content-expanded > div > table > tbody > tr.a-spacing-small.po-item_weight > td.a-span3 > span",
         "value": None
     }
     
