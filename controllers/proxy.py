@@ -1,5 +1,4 @@
 import random
-import os
 
 class Proxy:
     
@@ -10,9 +9,5 @@ class Proxy:
 
     def get_proxy_id(self, file):
         with open(f"{self.path}/{file}") as f:
-            agent = f.read().split("\n")
-            return random.choice(agent)
-
-
-agente = Proxy()
-print(agente.proxy_ip)
+            proxy = f.read().split("\n")
+            return { "http" : random.choice(proxy)}

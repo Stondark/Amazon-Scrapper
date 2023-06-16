@@ -16,6 +16,3 @@ class Agents:
             agent = f.read().split("\n")
             return random.choice(agent)
 
-
-agente = Agents()
-print(agente.user_agent)
