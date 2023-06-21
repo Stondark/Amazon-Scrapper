@@ -41,7 +41,7 @@ class Scrapper:
         for i in values["products"]:
             attempts = 0
             # print(i["value"])
-            while i["value"] is None and attempts < 5:
+            while i["value"] is None and attempts <= 3:
                 for j in i["selector"]:
 
                     if(i["name"] == "Peso"):
@@ -57,6 +57,9 @@ class Scrapper:
                             i["value"] = v_html.get_text().strip()
                     else:
                         attempts += 1
+                        if(attempts >= 2):
+                            html = self.get_html()
+                            
                         print(attempts, i["name"])
 
         return values
@@ -157,7 +160,7 @@ class Scrapper:
 
 
 def asad():
-    scrapp = Scrapper("https://www.amazon.com/-/es/PlayStation-PS5-Console-Ragnar%C3%B6k-Bundle-5/dp/B0BHC395WW/ref=sr_1_2?crid=3MBCFBJRA4EC1&keywords=playstation+5&qid=1680851108&sprefix=play%2Caps%2C169&sr=8-2")
+    scrapp = Scrapper("https://www.amazon.com/-/es/Tommy-Hilfiger-Ultra-Loft-Chaqueta/dp/B07G3BLWYW/?_encoding=UTF8&pd_rd_w=Jjhes&content-id=amzn1.sym.094b8411-30b9-4af6-bed5-15f63238bac9&pf_rd_p=094b8411-30b9-4af6-bed5-15f63238bac9&pf_rd_r=SEGTXH0R44JZPJ71W3Q8&pd_rd_wg=IMwfC&pd_rd_r=3ff526e2-ef8d-40ba-b241-1bd29e5a4d04&ref_=pd_gw_exports_top_sellers_by_gl_rec&th=1&psc=1")
     html = scrapp.scrape_product_info()
     # print(html)
     
