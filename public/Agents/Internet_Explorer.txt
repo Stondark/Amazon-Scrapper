@@ -211,7 +211,7 @@ More Internet Explorer 5.0 user agents strings -->>
 Mozilla/4.0 (compatible; MSIE 4.5; Windows NT 5.1; .NET CLR 2.0.40607)
 Mozilla/4.0 (compatible; MSIE 4.5; Windows 98; )
 Mozilla/4.0 (compatible; MSIE 4.5; Mac_PowerPC)
- Mozilla/4.0 (compatible; MSIE 4.5; Mac_PowerPC)
+Mozilla/4.0 (compatible; MSIE 4.5; Mac_PowerPC)
 Mozilla/4.0 PPC (compatible; MSIE 4.01; Windows CE; PPC; 240x320; Sprint:PPC-6700; PPC; 240x320)
 Mozilla/4.0 (compatible; MSIE 4.01; Windows NT)
 Mozilla/4.0 (compatible; MSIE 4.01; Windows NT 5.0)
