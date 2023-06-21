@@ -5,8 +5,7 @@ from agents import Agents
 
 # Librarys
 import requests
-import aiohttp
-import asyncio
+import re
 from bs4 import BeautifulSoup
 
 from timeit import default_timer
@@ -39,22 +38,26 @@ class Scrapper:
         return BeautifulSoup(response.content, 'html.parser')           
 
     def get_values_html(self, html, values):
-        # print(html)
         for i in values["products"]:
             attempts = 0
             # print(i["value"])
-            while i["value"] is None and attempts < 3:
+            while i["value"] is None and attempts < 5:
                 for j in i["selector"]:
-                    v_html = html.select_one(j["id"])
-                    if(v_html != None):
-                        if(v_html.name == 'img'):
-                            i["value"] = v_html['src']
-                            continue
- 
-                        i["value"] = v_html.get_text().strip()
-                        continue
 
-                    attempts += 1
+                    if(i["name"] == "Peso"):
+                        keyword_regex = re.compile(r'\b(libras|kilogramos|gramos)\b', re.IGNORECASE)
+                        v_html = html.find(string = keyword_regex)
+                    else: 
+                        v_html = html.select_one(j["id"])
+
+                    if(v_html != None):                
+                        if(v_html.name == 'img'):
+                            i["value"] = str(v_html['src'])
+                        else:
+                            i["value"] = v_html.get_text().strip()
+                    else:
+                        attempts += 1
+                        print(attempts, i["name"])
 
         return values
 
@@ -65,7 +68,7 @@ class Scrapper:
                 "name": "Producto",
                 "selector": [
                     {
-                    "id": "#a-offscreen"
+                    "id": "#productTitle"
                     }
                 ],
                 "value": None
@@ -74,7 +77,7 @@ class Scrapper:
                 "name": "Precio",
                 "selector": [
                     {
-                    "id": "#productTitle"
+                    "id": ".a-offscreen"
                     }
                 ],
                 "value": None
@@ -101,7 +104,10 @@ class Scrapper:
                 "name": "Imagen",
                 "selector": [
                     {
-                    "id": ".a-dynamic-image"
+                        "id": ".a-dynamic-image"
+                    },
+                    {
+                        "id": "#landingImage"
                     }
                 ],
                 "value": None
@@ -110,7 +116,10 @@ class Scrapper:
                 "name": "Vendedor",
                 "selector": [
                     {
-                    "id": "#sellerProfileTriggerId"
+                        "id": "#sellerProfileTriggerId"
+                    },
+                    {
+                        "id": "#tabular-buybox > div.tabular-buybox-container > div:nth-child(6) > div > span"
                     }
                 ],
                 "value": None
@@ -119,7 +128,7 @@ class Scrapper:
                 "name": "Enviado por",
                 "selector": [
                     {
-                    "id": "#tabular-buybox > div.tabular-buybox-container > div:nth-child(4) > div > span"
+                        "id": "#tabular-buybox > div.tabular-buybox-container > div:nth-child(4) > div > span"
                     }
                 ],
                 "value": None
@@ -129,6 +138,9 @@ class Scrapper:
                 "selector": [
                     {
                         "id": "#poExpander > div.a-expander-content.a-expander-partial-collapse-content.a-expander-content-expanded > div > table > tbody > tr.a-spacing-small.po-item_weight > td.a-span9 > span"
+                    },
+                    {
+                        "id": "#productDetails_detailBullets_sections1 > tbody > tr:nth-child(11) > td"
                     }
                 ],
                 "value": None
@@ -145,7 +157,7 @@ class Scrapper:
 
 
 def asad():
-    scrapp = Scrapper("https://www.amazon.com/-/es/gp/product/B0C1JKB652/ref=ewc_pr_img_2?smid=A2XZ7JICGUQ1CX&th=1")
+    scrapp = Scrapper("https://www.amazon.com/-/es/PlayStation-PS5-Console-Ragnar%C3%B6k-Bundle-5/dp/B0BHC395WW/ref=sr_1_2?crid=3MBCFBJRA4EC1&keywords=playstation+5&qid=1680851108&sprefix=play%2Caps%2C169&sr=8-2")
     html = scrapp.scrape_product_info()
     # print(html)
     
