@@ -1,18 +1,19 @@
 # Classes
 
-from proxy import Proxy
-from agents import Agents
+from controllers.proxy import Proxy
+from controllers.agents import Agents
 
 # Librarys
 import requests
 import re
 from bs4 import BeautifulSoup
 
-from timeit import default_timer
-
 class Scrapper:
 
     def __init__(self, url):
+
+        # set attributes
+
         self.url = url
         self.proxy = Proxy().proxy_ip;
         self.agent = Agents().user_agent
@@ -26,6 +27,9 @@ class Scrapper:
             'User-Agent': self.agent
         }
 
+        # invoke methods
+        self.check_url()
+
     
     def set_attributtes(self, money, language):
         self.money = money
@@ -33,14 +37,27 @@ class Scrapper:
         self.language = language
         self.headers['Accept-Language'] = language
 
+    def check_url(self):
+        regex = r"https:\/\/www\.amazon\.[a-zA-Z]{2,3}"
+        if not re.match(regex, self.url):
+            raise Exception("URL is not valid")
+
     def get_html(self):
-        response = requests.get(self.url, headers = self.headers, proxies = self.proxy, cookies = self.cookies)
-        return BeautifulSoup(response.content, 'html.parser')           
+        try:
+            response = requests.get(self.url, headers = self.headers, proxies = self.proxy, cookies = self.cookies)
+            response.raise_for_status()  # Lanza una excepción si hay un error HTTP
+            return BeautifulSoup(response.content, 'html.parser')  
+        except requests.exceptions.RequestException as e:
+            raise Exception("Error de solicitud:", e)
+        except requests.exceptions.HTTPError as e:
+            raise Exception("Error HTTP:", e)
+        except Exception as e:
+            raise Exception("Error:", e)
+         
 
     def get_values_html(self, html, values):
         for i in values["products"]:
             attempts = 0
-            # print(i["value"])
             while i["value"] is None and attempts <= 3:
                 for j in i["selector"]:
 
@@ -55,14 +72,35 @@ class Scrapper:
                             i["value"] = str(v_html['src'])
                         else:
                             i["value"] = v_html.get_text().strip()
+
+                        if(i["name"] == "Peso"):
+                            i["value"] = self.sanitize_weight(i["value"])
+
+
                     else:
                         attempts += 1
                         if(attempts >= 2):
                             html = self.get_html()
-                            
-                        print(attempts, i["name"])
-
         return values
+
+    def sanitize_weight(self, value):
+        regex = re.compile(r"\b(\d+(?:,\d+)?(?:\.\d+)?)\s*(libras|kilogramos|gramos)\b", re.IGNORECASE);
+        list_weight = re.findall(regex, value)
+        return self.convert_weight(list_weight[0])
+
+
+    def convert_weight(self, value):
+        value_weight = float(value[0].replace(',', '.'))
+        weight = value[-1]
+        if(weight.lower() == "libras"):
+            result = value_weight / 2.2046
+        elif(weight.lower() == "gramos"):
+            result = value_weight / 1.000
+        else:
+            result = value_weight
+        
+        return f"{round(result, 2)} Kilogramos"
+
 
     def scrape_product_info(self):
         values = {
@@ -136,35 +174,24 @@ class Scrapper:
                 ],
                 "value": None
                 },
-                    {
+                {
                 "name": "Peso",
                 "selector": [
-                    {
-                        "id": "#poExpander > div.a-expander-content.a-expander-partial-collapse-content.a-expander-content-expanded > div > table > tbody > tr.a-spacing-small.po-item_weight > td.a-span9 > span"
-                    },
-                    {
-                        "id": "#productDetails_detailBullets_sections1 > tbody > tr:nth-child(11) > td"
-                    }
-                ],
-                "value": None
+                        {
+                            "id": "#poExpander > div.a-expander-content.a-expander-partial-collapse-content.a-expander-content-expanded > div > table > tbody > tr.a-spacing-small.po-item_weight > td.a-span9 > span"
+                        },
+                        {
+                            "id": "#productDetails_detailBullets_sections1 > tbody > tr:nth-child(11) > td"
+                        },
+                        {
+                            "id": "#poExpander > div.a-expander-content.a-expander-partial-collapse-content.a-expander-content-expanded > div > table > tbody > tr.a-spacing-small.po-item_weight > td.a-span3 > span"
+                        }
+                    ],
+                    "value": None
                 }
             ]
         }
         
         html = self.get_html()
-        info = self.get_values_html(html, values)
-        for k in values["products"]:
-            print(k["name"].upper(), " : ", k["value"])
-    
-
-
-
-def asad():
-    scrapp = Scrapper("https://www.amazon.com/-/es/Tommy-Hilfiger-Ultra-Loft-Chaqueta/dp/B07G3BLWYW/?_encoding=UTF8&pd_rd_w=Jjhes&content-id=amzn1.sym.094b8411-30b9-4af6-bed5-15f63238bac9&pf_rd_p=094b8411-30b9-4af6-bed5-15f63238bac9&pf_rd_r=SEGTXH0R44JZPJ71W3Q8&pd_rd_wg=IMwfC&pd_rd_r=3ff526e2-ef8d-40ba-b241-1bd29e5a4d04&ref_=pd_gw_exports_top_sellers_by_gl_rec&th=1&psc=1")
-    html = scrapp.scrape_product_info()
-    # print(html)
-    
-asad()
-
-
-
+        return self.get_values_html(html, values)
+        

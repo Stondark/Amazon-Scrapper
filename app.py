@@ -1,15 +1,15 @@
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
-from typing import Text, Optional
+from fastapi import FastAPI
+from schema import ProductsModel
+from controllers.scrapper import Scrapper 
 
 # Init api
 app = FastAPI()
 
-# Set model of requests 
-class Products(BaseModel):
-    url: str
-
-@app.post("/")
-def get_product(product : Products):
-    return {"url": product.url}
+@app.post("/product")
+def get_product(product: ProductsModel):
+    try:
+        product_scrapp = Scrapper(product.url)
+        return product_scrapp.scrape_product_info()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
